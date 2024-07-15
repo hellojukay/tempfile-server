@@ -4,6 +4,6 @@ A tempfile server, designed for CI system, save file like logs , archive files a
 
 Working in progress, not ready to use.
 
-TODO : a tmepfile server , upload file to server and return download url, and file will be deleted after some  days。
+TODO : A tmepfile server , upload file to server and return download url, and files will be auto deleted after some days。
 
 
