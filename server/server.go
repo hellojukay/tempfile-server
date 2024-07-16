@@ -9,6 +9,7 @@ import (
 func NewFileServer(dir string) http.Handler {
 	return FileServer(Dir(abs(dir)), abs(dir))
 }
+
 func abs(dir string) string {
 	if filepath.IsAbs(dir) {
 		return dir
