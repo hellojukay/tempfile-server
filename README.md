@@ -1,6 +1,6 @@
 # tempfile-server
 
-A tempfile server, designed for CI system, save file like logs , archive files and and artifacts, files will be shared between CI mutil deparments。
+A tempfile server, designed for CI system, save file like logs , archive files and and artifacts, files will be shared between CI or mutil deparments。
 
 Working in progress, not ready to use.
 
