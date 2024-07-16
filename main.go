@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+
+	"github.com/hellojukay/tempfile-server/server"
 )
 
 var (
@@ -19,8 +21,6 @@ func init() {
 
 func main() {
 	// create http server
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World"))
-	})
+	http.Handle("/", server.NewFileServer("/tmp/"))
 	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
