@@ -1,6 +1,6 @@
 module github.com/hellojukay/tempfile-server
 
-go 1.22.0
+go 1.22
 
 require (
 	github.com/nats-io/nats-server/v2 v2.10.17
