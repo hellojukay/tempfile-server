@@ -25,6 +25,8 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/hellojukay/tempfile-server/event"
 )
 
 //go:embed index.html
@@ -742,7 +744,7 @@ func (f *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = upath
 	}
 	if r.Method == "POST" || r.Method == "PUT" {
-		if err := uploadFile(w, r, f.dir, f.root, path.Clean(upath)); err != nil {
+		if err := uploadFile(w, r, f.dir, path.Clean(upath)); err != nil {
 			log.Printf("upload file failed %s\n", err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
@@ -765,23 +767,25 @@ func getFilefromRequest(r *http.Request) (io.ReadCloser, string, error) {
 }
 
 // upload file
-func uploadFile(w http.ResponseWriter, r *http.Request, dir string, fs FileSystem, name string) error {
+func uploadFile(w http.ResponseWriter, r *http.Request, dir string, name string) error {
+	defer r.Body.Close()
 	r.ParseMultipartForm(32 << 20)
 	file, filename, err := getFilefromRequest(r)
 	if err != nil {
 		log.Printf("upload file %s\n", path.Base(r.URL.Path))
 		return err
 	}
-	log.Printf("upload file filename=%s to directory %s", filename, path.Join(dir, name))
-	if _, err := os.Stat(path.Join(dir, name)); err != nil {
+	targetDir := path.Join(dir, path.Dir(r.URL.Path))
+	log.Printf("upload file filename=%s to directory %s", filename, targetDir)
+	if _, err := os.Stat(targetDir); err != nil {
 		if os.IsNotExist(err) {
-			log.Printf("%s directory no exist, create it \n", path.Join(dir, name))
-			if err = os.MkdirAll(path.Join(dir, name), 0731); err != nil {
+			log.Printf("%s directory no exist, create it \n", targetDir)
+			if err = os.MkdirAll(targetDir, 0731); err != nil {
 				return err
 			}
 		}
 	}
-	fh, err := os.Create(path.Join(dir, name, filename))
+	fh, err := os.Create(path.Join(targetDir, filename))
 	if err != nil {
 		log.Printf("upload file filename=%s error, create file failed %s \n", filename, err)
 		return err
@@ -801,7 +805,8 @@ func uploadFile(w http.ResponseWriter, r *http.Request, dir string, fs FileSyste
 	defer fh.Close()
 	// write this byte array to our temporary file
 	// return that we have successfully uploaded our file!
-	log.Printf("Successfully Uploaded File %s \n", path.Join(dir, name, filename))
+	log.Printf("Successfully Uploaded File %s \n", path.Join(targetDir, filename))
+	event.PushFileUploadEvent(path.Join(targetDir, filename))
 	return nil
 }
 
