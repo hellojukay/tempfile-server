@@ -751,7 +751,6 @@ func (f *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	serveFile(w, r, f.root, path.Clean(upath), true)
-	log.Printf("%s %s\n", r.Method, filepath.Join(f.dir, upath))
 }
 
 func getFilefromRequest(r *http.Request) (io.ReadCloser, string, error) {
