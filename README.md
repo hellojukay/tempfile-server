@@ -11,6 +11,8 @@ How to upload file to server.
 curl -T file http://localhost:3456/..{directory}/.../{filename}
 ```
 
-TODO : A tmepfile server , upload file to server and return download url, and files will be auto deleted after some days。
+TODO : 
+- [x] support upload file to disk.
+- [ ] support s3.
 
 
