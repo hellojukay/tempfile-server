@@ -757,7 +757,9 @@ func getFilefromRequest(r *http.Request) (io.ReadCloser, string, error) {
 	if r.Method != http.MethodPut && r.Method != http.MethodPost {
 		return nil, "", errors.New("only GET and HEAD method support")
 	}
-	r.ParseMultipartForm(32 << 20)
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		return r.Body, path.Base(r.URL.Path), nil
+	}
 	file, handler, err := r.FormFile("file")
 	if err != nil {
 		return r.Body, path.Base(r.URL.Path), nil
