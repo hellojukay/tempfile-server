@@ -14,5 +14,7 @@ curl -T file http://localhost:3456/..{directory}/.../{filename}
 TODO : 
 - [x] support upload file to disk.
 - [ ] support s3.
+- [ ] permession control.
+- [ ] buket control.
 
 
