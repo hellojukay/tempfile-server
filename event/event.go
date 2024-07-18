@@ -73,6 +73,10 @@ func OnFileUpload(path string, duration time.Duration, callback func(path string
 func DeleteFile(msg jetstream.Msg) {
 	defer msg.Ack()
 	log.Printf("delete file: %s", string(msg.Data()))
+	// check file exists
+	if _, err := os.Stat(string(msg.Data())); os.IsNotExist(err) {
+		return
+	}
 	if err := os.Remove(string(msg.Data())); err != nil {
 		log.Printf("can not delete file: %s", err.Error())
 	}

@@ -7,7 +7,10 @@
 package server
 
 import (
+	"crypto/sha1"
 	_ "embed"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -744,10 +747,13 @@ func (f *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		r.URL.Path = upath
 	}
 	if r.Method == "POST" || r.Method == "PUT" {
-		if err := uploadFile(w, r, f.dir, path.Clean(upath)); err != nil {
+		fileInfo, err := uploadFile(w, r, f.dir, path.Clean(upath))
+		if err != nil {
 			log.Printf("upload file failed %s\n", err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
+		buf, _ := json.Marshal(fileInfo)
+		w.Write(buf)
 		return
 	}
 	serveFile(w, r, f.root, path.Clean(upath), true)
@@ -768,13 +774,13 @@ func getFilefromRequest(r *http.Request) (io.ReadCloser, string, error) {
 }
 
 // upload file
-func uploadFile(w http.ResponseWriter, r *http.Request, dir string, name string) error {
+func uploadFile(w http.ResponseWriter, r *http.Request, dir string, name string) (*FileInfo, error) {
 	defer r.Body.Close()
 	r.ParseMultipartForm(32 << 20)
 	file, filename, err := getFilefromRequest(r)
 	if err != nil {
 		log.Printf("upload file %s\n", path.Base(r.URL.Path))
-		return err
+		return nil, err
 	}
 	targetDir := path.Join(dir, path.Dir(r.URL.Path))
 	log.Printf("upload file filename=%s to directory %s", filename, targetDir)
@@ -782,22 +788,28 @@ func uploadFile(w http.ResponseWriter, r *http.Request, dir string, name string)
 		if os.IsNotExist(err) {
 			log.Printf("%s directory no exist, create it \n", targetDir)
 			if err = os.MkdirAll(targetDir, 0731); err != nil {
-				return err
+				return nil, err
 			}
 		}
 	}
 	fh, err := os.Create(path.Join(targetDir, filename))
 	if err != nil {
 		log.Printf("upload file filename=%s error, create file failed %s \n", filename, err)
-		return err
+		return nil, err
 	}
 	log.Printf("Writing %s\n", fh.Name())
 	defer file.Close()
+	var fileInfo = FileInfo{
+		Name: filename,
+		Path: r.URL.Path,
+	}
+	var hash = sha1.New()
 	var buffer = make([]byte, 10*1024*1024)
 	for {
 		n, err := file.Read(buffer)
 		if n > 0 {
 			fh.Write(buffer[:n])
+			hash.Write(buffer[:n])
 		}
 		if err == io.EOF {
 			break
@@ -808,7 +820,8 @@ func uploadFile(w http.ResponseWriter, r *http.Request, dir string, name string)
 	// return that we have successfully uploaded our file!
 	log.Printf("Successfully Uploaded File %s \n", path.Join(targetDir, filename))
 	event.PushFileUploadEvent(path.Join(targetDir, filename))
-	return nil
+	fileInfo.Sha1sum = hex.EncodeToString(hash.Sum(nil))
+	return &fileInfo, nil
 }
 
 // httpRange specifies the byte range to be sent to the client.
