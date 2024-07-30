@@ -7,8 +7,13 @@ Working in progress, not ready to use.
 # Usage
 How to upload file to server.
 ```bash
-# directory will auto created if not exists.
-curl -T file http://localhost:3456/..{directory}/.../{filename}
+$ curl -T tempfile-server http://localhost:3456/aaa/bbb/c/
+{
+    "name": "tempfile-server",
+    "path": "/aaa/bbb/c/tempfile-server",
+    "sha1sum": "d61827094d019e123aefe57588916e85c79ce99f",
+    "download_url": "http://127.0.0.1:3456/aaa/bbb/c/tempfile-server"
+}
 ```
 
 TODO : 

@@ -29,6 +29,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/hellojukay/tempfile-server/config"
 	"github.com/hellojukay/tempfile-server/event"
 )
 
@@ -746,13 +747,13 @@ func (f *fileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		upath = "/" + upath
 		r.URL.Path = upath
 	}
-	if r.Method == "POST" || r.Method == "PUT" {
+	if r.Method == http.MethodPost || r.Method == http.MethodPut {
 		fileInfo, err := uploadFile(w, r, f.dir, path.Clean(upath))
 		if err != nil {
 			log.Printf("upload file failed %s\n", err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-		buf, _ := json.Marshal(fileInfo)
+		buf, _ := json.MarshalIndent(fileInfo, "", "    ")
 		w.Write(buf)
 		return
 	}
@@ -821,6 +822,12 @@ func uploadFile(w http.ResponseWriter, r *http.Request, dir string, name string)
 	log.Printf("Successfully Uploaded File %s \n", path.Join(targetDir, filename))
 	event.PushFileUploadEvent(path.Join(targetDir, filename))
 	fileInfo.Sha1sum = hex.EncodeToString(hash.Sum(nil))
+	u, err := url.JoinPath(config.ExternalURL, strings.TrimPrefix(path.Join(targetDir, filename), config.Dir))
+	if err != nil {
+		log.Printf("url join path failed %s\n", err)
+		return nil, err
+	}
+	fileInfo.DownloadURL = u
 	return &fileInfo, nil
 }
 
