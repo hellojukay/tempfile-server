@@ -13,7 +13,7 @@ import (
 
 var (
 	uploadListener jetstream.Consumer
-	duration       = time.Second * 30
+	Duration       = time.Second * 30
 )
 
 func init() {
@@ -52,7 +52,7 @@ func init() {
 			for m := range msg {
 				meta, _ := m.Metadata()
 				if meta.NumDelivered == 1 {
-					m.NakWithDelay(duration)
+					m.NakWithDelay(Duration)
 				} else {
 					go DeleteFile(m)
 				}

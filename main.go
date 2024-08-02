@@ -8,6 +8,8 @@ import (
 	"os"
 	"runtime/debug"
 
+	"github.com/hellojukay/tempfile-server/event"
+
 	"github.com/hellojukay/tempfile-server/config"
 	"github.com/hellojukay/tempfile-server/server"
 )
@@ -21,6 +23,7 @@ func init() {
 	flag.IntVar(&config.Port, "port", 3456, "port")
 	flag.StringVar(&config.Dir, "dir", "./", "server directory")
 	flag.BoolVar(&version, "version", false, "show version")
+	flag.DurationVar(&event.Duration, "expiretime", 3600*24, "expire time")
 	flag.StringVar(&config.ExternalURL, "external-url", "http://127.0.0.1:3456", "server external url")
 	if !flag.Parsed() {
 		flag.Parse()
