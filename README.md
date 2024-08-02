@@ -4,6 +4,11 @@ A tempfile server, designed for CI system, save file like logs , archive files a
 
 Working in progress, not ready to use.
 
+# Install
+```bash
+go install github.com/yubo/tempfile-server@latest
+``` 
+
 # Usage
 How to upload file to server.
 ```bash
