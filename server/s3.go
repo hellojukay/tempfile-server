@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"path"
@@ -19,7 +20,7 @@ var (
 func GetMinIOClient() *minio.Client {
 	var c *minio.Client
 	once.Do(func() {
-		client, err := minio.New(config.EndPoint, &minio.Options{
+		client, err := minio.New(config.S3EndPoint, &minio.Options{
 			Creds:  credentials.NewStaticV4(config.AccessKeyID, config.AccessKeySecret, ""),
 			Secure: config.UseSSL,
 		})
@@ -73,6 +74,9 @@ func (s *MinIOServer) PostOrPut(w http.ResponseWriter, r *http.Request) error {
 
 func (s *MinIOServer) createPathIfNotExist(bukect string, objectPath string) error {
 	minioClient := GetMinIOClient()
+	if minioClient == nil {
+		return fmt.Errorf("minio client is nil")
+	}
 	// check if bucket exists
 	exist, err := minioClient.BucketExists(context.Background(), bukect)
 	if err != nil {

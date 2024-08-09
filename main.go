@@ -29,6 +29,7 @@ func init() {
 	flag.StringVar(&config.AccessKeyID, "access-key", "", "S3 server access key")
 	flag.StringVar(&config.AccessKeySecret, "secret-key", "", "S3 server secret key")
 	flag.StringVar(&config.BucketName, "bucket", "upload", "S3 server bucket name")
+	flag.StringVar(&config.S3EndPoint, "endpoint", "127.0.0.1:9000", "S3 server endpoint")
 	if !flag.Parsed() {
 		flag.Parse()
 	}
@@ -43,6 +44,8 @@ func init() {
 
 func main() {
 	// create http server
-	http.Handle("/", server.NewFileServer(config.Dir))
+	//http.Handle("/", server.NewFileServer(config.Dir))
+	http.Handle("/", &server.MinIOServer{})
+
 	http.ListenAndServe(fmt.Sprintf(":%d", config.Port), nil)
 }
